@@ -62,10 +62,12 @@ def split(*receipts: dict):
             # Source can clear their debt
             elif s_debt < t_debt:
                 payment(s_name, t_name, s_debt)
+                targets[t_name] -= s_debt
                 break
 
             # Target is fully repayed
             else:
                 payment(s_name, t_name, t_debt)
                 del targets[t_name]
+                s_debt -= t_debt
                 continue
