@@ -41,23 +41,31 @@ def split(*receipts: dict):
     sources = {name: +debt for name, debt in debts.items() if debt > 0}
     targets = {name: -debt for name, debt in debts.items() if debt < 0}
 
+    # Determine the longest names
+    s_max_len = max(len(name) for name in sources.keys())
+    t_max_len = max(len(name) for name in targets.keys())
+
+    # Format all pretty
+    def payment(src_name, tar_name, amount):
+        print(f"{src_name.ljust(s_max_len)} -> {tar_name.ljust(t_max_len)}: {amount:.2f}")
+
     # Determine transfers
     for s_name, s_debt in sources.items():
         for t_name, t_debt in deepcopy(targets).items():
 
             # Perfect offset
             if s_debt == t_debt:
-                print(f"{s_name} -> {t_name}: ${t_debt:.2f}")
+                payment(s_name, t_name, t_debt)
                 del targets[t_name]
                 break
 
             # Source can clear their debt
             elif s_debt < t_debt:
-                print(f"{s_name} -> {t_name}: ${s_debt:.2f}")
+                payment(s_name, t_name, s_debt)
                 break
 
             # Target is fully repayed
             else:
-                print(f"{s_name} -> {t_name}: ${t_debt:.2f}")
+                payment(s_name, t_name, t_debt)
                 del targets[t_name]
                 continue
