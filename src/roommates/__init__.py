@@ -1,3 +1,6 @@
+from copy import deepcopy
+from collections import defaultdict
+
 def split(*receipts: dict):
     """
     Compute equalization payments between roommates.
@@ -23,4 +26,38 @@ def split(*receipts: dict):
                 print(f"ERROR: Price {price} is not a valid float/int.")
                 exit()
 
-    # Track overall payments 
+    # Track debts
+    debts = defaultdict(float)
+    for receipt in receipts:
+
+        # Expected payment
+        fair_split = sum(receipt.values()) / len(receipt)
+
+        # Compute partial debt
+        for name, price in receipt.items():
+            debts[name] += fair_split - price
+    
+    # Separate payers and receivers
+    sources = {name: +debt for name, debt in debts.items() if debt > 0}
+    targets = {name: -debt for name, debt in debts.items() if debt < 0}
+
+    # Determine transfers
+    for s_name, s_debt in sources.items():
+        for t_name, t_debt in deepcopy(targets).items():
+
+            # Perfect offset
+            if s_debt == t_debt:
+                print(f"{s_name} -> {t_name}: ${t_debt:.2f}")
+                del targets[t_name]
+                break
+
+            # Source can clear their debt
+            elif s_debt < t_debt:
+                print(f"{s_name} -> {t_name}: ${s_debt:.2f}")
+                break
+
+            # Target is fully repayed
+            else:
+                print(f"{s_name} -> {t_name}: ${t_debt:.2f}")
+                del targets[t_name]
+                continue
